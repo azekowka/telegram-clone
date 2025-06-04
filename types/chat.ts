@@ -1,0 +1,21 @@
+export interface Chat {
+  id: string
+  name: string
+  avatar?: string
+  isOnline: boolean
+  isAI: boolean
+  lastMessage?: string
+  lastMessageTime?: Date
+  unreadCount: number
+}
+
+export interface Message {
+  id: string
+  content: string
+  sender: "user" | "ai" | "other"
+  timestamp: Date
+  status: "sent" | "delivered" | "read"
+  replyTo?: string
+}
+
+export type MessageStatus = "sent" | "delivered" | "read"

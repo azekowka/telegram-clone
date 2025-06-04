@@ -1,0 +1,257 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+
+    /* Custom theme variables */
+    --chat-bg: 0 0% 98%;
+    --sidebar-bg: 0 0% 100%;
+    --message-out-bg: 221.2 83.2% 53.3%;
+    --message-in-bg: 0 0% 100%;
+    --online-indicator: 142.1 76.2% 36.3%;
+  }
+
+  /* Blue Theme (Telegram-like) */
+  [data-theme="blue"] {
+    --background: 210 100% 6%;
+    --foreground: 0 0% 100%;
+    --card: 210 100% 8%;
+    --card-foreground: 0 0% 100%;
+    --popover: 210 100% 8%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 200 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 100% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 100% 10%;
+    --muted-foreground: 210 20% 70%;
+    --accent: 210 100% 12%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 100% 15%;
+    --input: 210 100% 12%;
+    --ring: 200 100% 50%;
+
+    /* Custom blue theme variables */
+    --chat-bg: 210 100% 4%;
+    --sidebar-bg: 210 100% 8%;
+    --message-out-bg: 200 100% 50%;
+    --message-in-bg: 210 100% 12%;
+    --online-indicator: 142.1 76.2% 36.3%;
+  }
+
+  /* Dark Theme */
+  [data-theme="dark"] {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+
+    /* Custom dark theme variables */
+    --chat-bg: 222.2 84% 2%;
+    --sidebar-bg: 222.2 84% 4.9%;
+    --message-out-bg: 217.2 91.2% 59.8%;
+    --message-in-bg: 217.2 32.6% 17.5%;
+    --online-indicator: 142.1 76.2% 36.3%;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer utilities {
+  .border-border {
+    border-color: hsl(var(--border));
+  }
+  
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
+  
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
+  
+  .bg-muted {
+    background-color: hsl(var(--muted));
+  }
+  
+  .text-muted-foreground {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  .bg-primary {
+    background-color: hsl(var(--primary));
+  }
+  
+  .text-primary-foreground {
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .bg-secondary {
+    background-color: hsl(var(--secondary));
+  }
+  
+  .text-secondary-foreground {
+    color: hsl(var(--secondary-foreground));
+  }
+}
+
+/* Custom scrollbar with theme support */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Message animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-bubble {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+/* Theme-specific styles */
+[data-theme="blue"] .chat-background {
+  background: linear-gradient(135deg, hsl(var(--chat-bg)), hsl(210 100% 8%));
+}
+
+[data-theme="dark"] .chat-background {
+  background: linear-gradient(135deg, hsl(var(--chat-bg)), hsl(222.2 84% 6%));
+}
+
+/* Online indicator with theme support */
+.online-indicator {
+  background-color: hsl(var(--online-indicator));
+}
+
+/* Message bubbles with theme support */
+.message-out {
+  background-color: hsl(var(--message-out-bg));
+  color: hsl(var(--primary-foreground));
+}
+
+.message-in {
+  background-color: hsl(var(--message-in-bg));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+/* Sidebar with theme support */
+.sidebar-bg {
+  background-color: hsl(var(--sidebar-bg));
+}
+
+/* Chat area with theme support */
+.chat-area-bg {
+  background-color: hsl(var(--chat-bg));
+}
+
+/* Input area styling */
+.input-area {
+  background-color: hsl(var(--background));
+  border-top: 1px solid hsl(var(--border));
+}
+
+/* Active chat item */
+.chat-item-active {
+  background-color: hsl(var(--primary) / 0.1);
+  border-left: 4px solid hsl(var(--primary));
+}
+
+/* Hover effects */
+.chat-item-hover:hover {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+/* Theme-specific button styles */
+[data-theme="blue"] .btn-primary {
+  background-color: hsl(200 100% 50%);
+}
+
+[data-theme="blue"] .btn-primary:hover {
+  background-color: hsl(200 100% 45%);
+}
+
+/* Search input styling */
+.search-input {
+  background-color: hsl(var(--muted));
+  border: none;
+  color: hsl(var(--foreground));
+}
+
+.search-input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Typing indicator with theme support */
+.typing-indicator {
+  color: hsl(var(--muted-foreground));
+}
+
+.typing-dot {
+  background-color: hsl(var(--muted-foreground));
+}
