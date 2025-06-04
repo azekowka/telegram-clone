@@ -15,6 +15,10 @@ export default function HomePage() {
 
   // Load data from localStorage on mount
   useEffect(() => {
+    // Clear old data to load updated mock data
+    localStorage.removeItem("telegram-chats")
+    localStorage.removeItem("telegram-messages")
+    
     const savedChats = localStorage.getItem("telegram-chats")
     const savedMessages = localStorage.getItem("telegram-messages")
 
@@ -83,7 +87,7 @@ export default function HomePage() {
     setActiveChat(null)
   }
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!activeChat || !content.trim()) return
 
     const newMessage: Message = {
@@ -106,14 +110,44 @@ export default function HomePage() {
       ),
     )
 
-    // Simulate AI response for AI chats
+    // Handle AI responses
     const currentChat = chats.find((c) => c.id === activeChat)
-    if (currentChat?.isAI) {
+    if (currentChat?.aiType) {
       setTimeout(
-        () => {
+        async () => {
+          let aiResponseContent: string
+          
+          if (currentChat.aiType === 'gemini') {
+            // Real Gemini AI response
+            try {
+              const response = await fetch('/api/gemini', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: content }),
+              })
+              
+              if (response.ok) {
+                const data = await response.json()
+                aiResponseContent = data.response
+              } else {
+                aiResponseContent = "Извините, произошла ошибка при обращении к Gemini AI. Попробуйте позже."
+              }
+            } catch (error) {
+              console.error('Error calling Gemini API:', error)
+              aiResponseContent = "Извините, произошла ошибка при обращении к Gemini AI. Попробуйте позже."
+            }
+          } else if (currentChat.aiType === 'fake') {
+            // Fake GPT responses
+            aiResponseContent = generateFakeAIResponse(content)
+          } else {
+            return // No AI response for regular chats
+          }
+
           const aiResponse: Message = {
             id: (Date.now() + 1).toString(),
-            content: generateAIResponse(content),
+            content: aiResponseContent,
             sender: "ai",
             timestamp: new Date(),
             status: "delivered",
@@ -136,7 +170,7 @@ export default function HomePage() {
     }
   }
 
-  const generateAIResponse = (userMessage: string): string => {
+  const generateFakeAIResponse = (userMessage: string): string => {
     const responses = [
       "Это интересный вопрос! Позвольте мне подумать над этим.",
       "Я понимаю вашу точку зрения. Вот что я думаю по этому поводу...",
@@ -144,6 +178,8 @@ export default function HomePage() {
       "Это довольно сложная тема. Давайте разберем ее по частям.",
       "Спасибо за вопрос! Вот мой ответ:",
       "Интересно, что вы об этом спрашиваете. Мое мнение таково:",
+      "Хм, это заставляет меня задуматься. Вот что я думаю:",
+      "Отличная тема для обсуждения! Мой взгляд на это следующий:",
     ]
 
     return responses[Math.floor(Math.random() * responses.length)]

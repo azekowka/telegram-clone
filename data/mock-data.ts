@@ -3,18 +3,20 @@ import type { Chat, Message } from "@/types/chat"
 export const mockChats: Chat[] = [
   {
     id: "1",
-    name: "GPT Assistant",
+    name: "Fake GPT",
     isOnline: true,
     isAI: true,
+    aiType: 'fake',
     lastMessage: "Чем могу помочь?",
     lastMessageTime: new Date(Date.now() - 1000 * 60 * 5),
     unreadCount: 0,
   },
   {
     id: "2",
-    name: "Claude AI",
+    name: "Gemini AI",
     isOnline: true,
     isAI: true,
+    aiType: 'gemini',
     lastMessage: "Готов к общению!",
     lastMessageTime: new Date(Date.now() - 1000 * 60 * 15),
     unreadCount: 1,
@@ -24,6 +26,7 @@ export const mockChats: Chat[] = [
     name: "Анна Петрова",
     isOnline: true,
     isAI: false,
+    aiType: null,
     lastMessage: "Увидимся завтра!",
     lastMessageTime: new Date(Date.now() - 1000 * 60 * 30),
     unreadCount: 2,
@@ -33,17 +36,9 @@ export const mockChats: Chat[] = [
     name: "Иван Сидоров",
     isOnline: false,
     isAI: false,
+    aiType: null,
     lastMessage: "Спасибо за помощь",
     lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    unreadCount: 0,
-  },
-  {
-    id: "5",
-    name: "Coding Assistant",
-    isOnline: true,
-    isAI: true,
-    lastMessage: "Помогу с программированием",
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 3),
     unreadCount: 0,
   },
 ]
@@ -92,7 +87,7 @@ export const mockMessages: Record<string, Message[]> = {
     {
       id: "6",
       content:
-        "Я Claude - ИИ-ассистент, созданный Anthropic. Я могу помочь с различными задачами: от написания текстов до решения сложных проблем. Готов к общению!",
+        "Привет! Я Gemini - AI ассистент от Google. Я могу помочь с различными задачами: ответить на вопросы, помочь с написанием текстов, решением проблем и многим другим. Готов к общению!",
       sender: "ai",
       timestamp: new Date(Date.now() - 1000 * 60 * 19),
       status: "delivered",
@@ -163,23 +158,6 @@ export const mockMessages: Record<string, Message[]> = {
       sender: "user",
       timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
       status: "read",
-    },
-  ],
-  "5": [
-    {
-      id: "16",
-      content: "Помоги с TypeScript",
-      sender: "user",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-      status: "read",
-    },
-    {
-      id: "17",
-      content:
-        "С удовольствием помогу с TypeScript! Это мощный инструмент для разработки. С какой конкретной задачей нужна помощь? Типизация, интерфейсы, дженерики или что-то другое?",
-      sender: "ai",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3.5),
-      status: "delivered",
     },
   ],
 }

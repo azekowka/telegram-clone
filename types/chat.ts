@@ -4,6 +4,7 @@ export interface Chat {
   avatar?: string
   isOnline: boolean
   isAI: boolean
+  aiType?: 'gemini' | 'fake' | null
   lastMessage?: string
   lastMessageTime?: Date
   unreadCount: number
