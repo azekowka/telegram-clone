@@ -15,10 +15,6 @@ export default function HomePage() {
 
   // Load data from localStorage on mount
   useEffect(() => {
-    // Clear old data to load updated mock data
-    localStorage.removeItem("telegram-chats")
-    localStorage.removeItem("telegram-messages")
-    
     const savedChats = localStorage.getItem("telegram-chats")
     const savedMessages = localStorage.getItem("telegram-messages")
 
@@ -140,7 +136,7 @@ export default function HomePage() {
             }
           } else if (currentChat.aiType === 'fake') {
             // Fake GPT responses
-            aiResponseContent = generateFakeAIResponse(content)
+            aiResponseContent = generateFakeAIResponse()
           } else {
             return // No AI response for regular chats
           }
@@ -170,7 +166,7 @@ export default function HomePage() {
     }
   }
 
-  const generateFakeAIResponse = (userMessage: string): string => {
+  const generateFakeAIResponse = (): string => {
     const responses = [
       "Это интересный вопрос! Позвольте мне подумать над этим.",
       "Я понимаю вашу точку зрения. Вот что я думаю по этому поводу...",
@@ -192,7 +188,7 @@ export default function HomePage() {
     <div className="flex h-screen bg-muted/30">
       {/* Sidebar */}
       <div className={`${isMobile ? (showSidebar ? "w-full" : "hidden") : "w-80"} transition-all duration-300`}>
-        <ChatSidebar chats={chats} activeChat={activeChat} onChatSelect={handleChatSelect} isMobile={isMobile} />
+        <ChatSidebar chats={chats} activeChat={activeChat} onChatSelect={handleChatSelect} />
       </div>
 
       {/* Chat Area */}

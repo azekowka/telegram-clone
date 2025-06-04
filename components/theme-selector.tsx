@@ -11,6 +11,8 @@ const themes = [
   { id: "dark", name: "Темная", color: "bg-gray-900", border: "border-gray-700" },
 ] as const
 
+type ThemeId = typeof themes[number]['id']
+
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme()
 
@@ -25,7 +27,7 @@ export function ThemeSelector() {
         {themes.map((themeOption) => (
           <DropdownMenuItem
             key={themeOption.id}
-            onClick={() => setTheme(themeOption.id as any)}
+            onClick={() => setTheme(themeOption.id as ThemeId)}
             className="flex items-center gap-3 cursor-pointer"
           >
             <div className={`w-4 h-4 rounded-full ${themeOption.color} ${themeOption.border} border-2`} />

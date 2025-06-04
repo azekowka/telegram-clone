@@ -12,10 +12,9 @@ interface ChatSidebarProps {
   chats: Chat[]
   activeChat: string | null
   onChatSelect: (chatId: string) => void
-  isMobile: boolean
 }
 
-export function ChatSidebar({ chats, activeChat, onChatSelect, isMobile }: ChatSidebarProps) {
+export function ChatSidebar({ chats, activeChat, onChatSelect }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredChats = chats.filter(
