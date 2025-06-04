@@ -23,7 +23,7 @@ export const mockChats: Chat[] = [
   },
   {
     id: "3",
-    name: "Анна Петрова",
+    name: "Абдулазиз Студент",
     isOnline: true,
     isAI: false,
     aiType: null,
@@ -33,7 +33,7 @@ export const mockChats: Chat[] = [
   },
   {
     id: "4",
-    name: "Иван Сидоров",
+    name: "Бахредин Ментор",
     isOnline: false,
     isAI: false,
     aiType: null,
@@ -96,7 +96,7 @@ export const mockMessages: Record<string, Message[]> = {
   "3": [
     {
       id: "7",
-      content: "Привет, Анна! Как прошла встреча?",
+      content: "Привет, Абдулазиз! Как прошла встреча?",
       sender: "user",
       timestamp: new Date(Date.now() - 1000 * 60 * 45),
       status: "read",
@@ -126,7 +126,7 @@ export const mockMessages: Record<string, Message[]> = {
   "4": [
     {
       id: "11",
-      content: "Иван, можешь помочь с проектом?",
+      content: "Бахредин, можешь помочь с проектом?",
       sender: "user",
       timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
       status: "read",
