@@ -26,34 +26,46 @@ export function useChats() {
   return useQuery({
     queryKey: chatKeys.all,
     queryFn: async (): Promise<Chat[]> => {
-      // Если мы на сервере, возвращаем моковые данные
-      if (typeof window === 'undefined') {
+      try {
+        // Если мы на сервере, возвращаем моковые данные
+        if (typeof window === 'undefined') {
+          const { chats } = await import('@/data/mock-data')
+          return chats.map((chat: Chat) => ({
+            ...chat,
+            messages: Array.isArray(chat.messages) ? chat.messages : []
+          }))
+        }
+
+        // На клиенте пытаемся мигрировать старые данные
+        const { migrateOldDataFormat, validateAndFixChatsData } = await import('@/lib/localStorage-utils')
+        migrateOldDataFormat()
+        
+        // Проверяем и исправляем данные
+        const validatedChats = validateAndFixChatsData()
+        if (validatedChats) {
+          return validatedChats
+        }
+        
+        // Возвращаем моковые данные, если нет сохраненных
+        const { chats } = await import('@/data/mock-data')
+        // Убеждаемся, что каждый чат имеет массив сообщений
+        return chats.map((chat: Chat) => ({
+          ...chat,
+          messages: Array.isArray(chat.messages) ? chat.messages : []
+        }))
+      } catch (error) {
+        console.error('Error in useChats:', error)
+        // В случае любой ошибки возвращаем моковые данные
         const { chats } = await import('@/data/mock-data')
         return chats.map((chat: Chat) => ({
           ...chat,
           messages: Array.isArray(chat.messages) ? chat.messages : []
         }))
       }
-
-      // На клиенте пытаемся мигрировать старые данные
-      const { migrateOldDataFormat, validateAndFixChatsData } = await import('@/lib/localStorage-utils')
-      migrateOldDataFormat()
-      
-      // Проверяем и исправляем данные
-      const validatedChats = validateAndFixChatsData()
-      if (validatedChats) {
-        return validatedChats
-      }
-      
-      // Возвращаем моковые данные, если нет сохраненных
-      const { chats } = await import('@/data/mock-data')
-      // Убеждаемся, что каждый чат имеет массив сообщений
-      return chats.map((chat: Chat) => ({
-        ...chat,
-        messages: Array.isArray(chat.messages) ? chat.messages : []
-      }))
     },
     staleTime: 30 * 1000, // 30 секунд
+    retry: 3, // Больше попыток для Vercel
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   })
 }
 

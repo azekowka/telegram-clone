@@ -7,14 +7,30 @@ import type { Message } from "@/types/chat"
 import { useChats, useSendMessage, useAddMessage } from "@/hooks/use-chat-queries"
 
 export default function HomePageClient() {
+  const [isClient, setIsClient] = useState(false)
   const [activeChat, setActiveChat] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
 
-  // TanStack Query hooks
+  // TanStack Query hooks - только на клиенте
   const { data: chats = [], isLoading: chatsLoading, error: chatsError } = useChats()
   const sendMessageMutation = useSendMessage()
   const addMessageMutation = useAddMessage()
+
+  // Убеждаемся, что мы на клиенте
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Дополнительная диагностика для Vercel
+  useEffect(() => {
+    if (chatsError) {
+      console.error('Chat loading error on Vercel:', chatsError)
+    }
+    if (chats.length > 0) {
+      console.log('Chats loaded successfully:', chats.length)
+    }
+  }, [chats, chatsError])
 
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -29,6 +45,15 @@ export default function HomePageClient() {
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
+
+  // Показываем загрузку пока не убедимся что мы на клиенте
+  if (!isClient) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-muted/30">
+        <div className="text-lg">Инициализация...</div>
+      </div>
+    )
+  }
 
   const handleChatSelect = (chatId: string) => {
     setActiveChat(chatId)
@@ -119,9 +144,31 @@ export default function HomePageClient() {
   }
 
   if (chatsError) {
+    console.error('Full error details:', chatsError)
     return (
-      <div className="flex h-screen items-center justify-center bg-muted/30">
-        <div className="text-lg text-red-500">Ошибка загрузки чатов</div>
+      <div className="flex h-screen items-center justify-center bg-red-50">
+        <div className="text-center max-w-md p-6">
+          <div className="text-red-600 text-lg mb-2">Ошибка загрузки чатов</div>
+          <div className="text-sm text-gray-600 mb-4">
+            {chatsError instanceof Error ? chatsError.message : 'Неизвестная ошибка'}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Попробовать снова
+          </button>
+          {process.env.NODE_ENV === 'development' && (
+            <details className="mt-4 text-left">
+              <summary className="cursor-pointer text-xs text-gray-500">
+                Детали ошибки (dev only)
+              </summary>
+              <pre className="mt-2 text-xs text-red-500 overflow-auto">
+                {JSON.stringify(chatsError, null, 2)}
+              </pre>
+            </details>
+          )}
+        </div>
       </div>
     )
   }

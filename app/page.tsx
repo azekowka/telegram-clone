@@ -1,17 +1,16 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-
-// Динамически импортируем главный компонент только на клиенте
-const HomePageClient = dynamic(() => import('@/components/home-page-client'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-screen items-center justify-center bg-muted/30">
-      <div className="text-lg">Загрузка...</div>
-    </div>
-  )
-})
+import { Suspense } from 'react'
+import HomePageClient from '@/components/home-page-client'
 
 export default function HomePage() {
-  return <HomePageClient />
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center bg-muted/30">
+        <div className="text-lg">Загрузка приложения...</div>
+      </div>
+    }>
+      <HomePageClient />
+    </Suspense>
+  )
 }

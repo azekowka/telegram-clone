@@ -21,6 +21,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             retry: 1,
             // Фоновое обновление при фокусе окна
             refetchOnWindowFocus: false,
+            // Отключаем рефетч при реконнекте для стабильности
+            refetchOnReconnect: false,
           },
           mutations: {
             retry: 1,
@@ -34,14 +36,17 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
     setMounted(true)
   }, [])
 
+  // Не рендерим QueryClient до полного монтирования
   if (!mounted) {
-    return <>{children}</>
+    return <div className="flex h-screen items-center justify-center bg-muted/30">
+      <div className="text-lg">Загрузка...</div>
+    </div>
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools initialIsOpen={false} />
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   )
 } 
