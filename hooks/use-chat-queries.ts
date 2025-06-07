@@ -26,7 +26,16 @@ export function useChats() {
   return useQuery({
     queryKey: chatKeys.all,
     queryFn: async (): Promise<Chat[]> => {
-      // Пытаемся мигрировать старые данные
+      // Если мы на сервере, возвращаем моковые данные
+      if (typeof window === 'undefined') {
+        const { chats } = await import('@/data/mock-data')
+        return chats.map((chat: Chat) => ({
+          ...chat,
+          messages: Array.isArray(chat.messages) ? chat.messages : []
+        }))
+      }
+
+      // На клиенте пытаемся мигрировать старые данные
       const { migrateOldDataFormat, validateAndFixChatsData } = await import('@/lib/localStorage-utils')
       migrateOldDataFormat()
       

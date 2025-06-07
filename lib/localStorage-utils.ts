@@ -1,6 +1,8 @@
 import type { Chat } from '@/types/chat'
 
 export function clearAllLocalStorageData() {
+  if (typeof window === 'undefined') return
+  
   localStorage.removeItem('telegram-chats')
   localStorage.removeItem('telegram-messages')
   localStorage.removeItem('user-profile')
@@ -8,12 +10,17 @@ export function clearAllLocalStorageData() {
 }
 
 export function resetChatsData() {
+  if (typeof window === 'undefined') return
+  
   localStorage.removeItem('telegram-chats')
   // Принудительно перезагружаем страницу для очистки кеша React Query
   window.location.reload()
 }
 
 export function validateAndFixChatsData(): Chat[] | null {
+  // Check if we're on the client side
+  if (typeof window === 'undefined') return null
+
   try {
     const storedChats = localStorage.getItem('telegram-chats')
     if (!storedChats) return null
@@ -34,13 +41,18 @@ export function validateAndFixChatsData(): Chat[] | null {
   } catch (error) {
     console.error('Error validating chats data:', error)
     // Если данные повреждены, очищаем их
-    localStorage.removeItem('telegram-chats')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('telegram-chats')
+    }
     return null
   }
 }
 
 // Функция для миграции старых данных в новый формат
 export function migrateOldDataFormat() {
+  // Check if we're on the client side
+  if (typeof window === 'undefined') return false
+
   try {
     const oldChats = localStorage.getItem('telegram-chats')
     const oldMessages = localStorage.getItem('telegram-messages')

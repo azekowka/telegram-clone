@@ -34,7 +34,21 @@ export function useUserProfile() {
   return useQuery({
     queryKey: userKeys.profile(),
     queryFn: async (): Promise<UserProfile> => {
-      // Здесь можно заменить на реальный API вызов
+      // Возвращаем моковый профиль для SSR
+      const defaultProfile = {
+        id: 'user-1',
+        name: 'Вы',
+        username: '@you',
+        status: 'В сети',
+        lastSeen: new Date(),
+      }
+
+      // Если на сервере, возвращаем дефолтный профиль
+      if (typeof window === 'undefined') {
+        return defaultProfile
+      }
+      
+      // На клиенте проверяем localStorage
       const storedProfile = localStorage.getItem('user-profile')
       if (storedProfile) {
         const parsed = JSON.parse(storedProfile)
@@ -44,14 +58,7 @@ export function useUserProfile() {
         }
       }
       
-      // Возвращаем моковый профиль
-      return {
-        id: 'user-1',
-        name: 'Вы',
-        username: '@you',
-        status: 'В сети',
-        lastSeen: new Date(),
-      }
+      return defaultProfile
     },
     staleTime: 5 * 60 * 1000, // 5 минут
   })
@@ -62,20 +69,27 @@ export function useUserPreferences() {
   return useQuery({
     queryKey: userKeys.preferences(),
     queryFn: async (): Promise<UserPreferences> => {
+      // Настройки по умолчанию
+      const defaultPreferences = {
+        theme: 'system' as const,
+        language: 'ru' as const,
+        notifications: true,
+        soundEnabled: true,
+        fontSize: 'medium' as const,
+        chatBackground: 'default',
+      }
+
+      // Если на сервере, возвращаем дефолтные настройки
+      if (typeof window === 'undefined') {
+        return defaultPreferences
+      }
+
       const storedPrefs = localStorage.getItem('user-preferences')
       if (storedPrefs) {
         return JSON.parse(storedPrefs)
       }
       
-      // Возвращаем настройки по умолчанию
-      return {
-        theme: 'system',
-        language: 'ru',
-        notifications: true,
-        soundEnabled: true,
-        fontSize: 'medium',
-        chatBackground: 'default',
-      }
+      return defaultPreferences
     },
     staleTime: 10 * 60 * 1000, // 10 минут
   })
