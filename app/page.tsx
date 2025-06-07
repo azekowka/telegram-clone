@@ -4,48 +4,20 @@ import { useState, useEffect } from "react"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { ChatArea } from "@/components/chat-area"
 import type { Chat, Message } from "@/types/chat"
-import { mockChats, mockMessages } from "@/data/mock-data"
+import { useChats, useSendMessage, useAddMessage } from "@/hooks/use-chat-queries"
 
 export default function HomePage() {
-  const [chats, setChats] = useState<Chat[]>([])
-  const [messages, setMessages] = useState<Record<string, Message[]>>({})
   const [activeChat, setActiveChat] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [showSidebar, setShowSidebar] = useState(true)
 
-  // Load data from localStorage on mount
+  // TanStack Query hooks
+  const { data: chats = [], isLoading: chatsLoading, error: chatsError } = useChats()
+  const sendMessageMutation = useSendMessage()
+  const addMessageMutation = useAddMessage()
+
+  // Check if mobile on mount and resize
   useEffect(() => {
-    const savedChats = localStorage.getItem("telegram-chats")
-    const savedMessages = localStorage.getItem("telegram-messages")
-
-    if (savedChats) {
-      const parsedChats = JSON.parse(savedChats)
-      // Convert date strings back to Date objects
-      const chatsWithDates = parsedChats.map((chat: Chat) => ({
-        ...chat,
-        lastMessageTime: chat.lastMessageTime ? new Date(chat.lastMessageTime) : undefined,
-      }))
-      setChats(chatsWithDates)
-    } else {
-      setChats(mockChats)
-    }
-
-    if (savedMessages) {
-      const parsedMessages = JSON.parse(savedMessages)
-      // Convert date strings back to Date objects
-      const messagesWithDates: Record<string, Message[]> = {}
-      Object.keys(parsedMessages).forEach((chatId) => {
-        messagesWithDates[chatId] = parsedMessages[chatId].map((message: Message) => ({
-          ...message,
-          timestamp: new Date(message.timestamp),
-        }))
-      })
-      setMessages(messagesWithDates)
-    } else {
-      setMessages(mockMessages)
-    }
-
-    // Check if mobile
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
       if (window.innerWidth < 768) {
@@ -57,19 +29,6 @@ export default function HomePage() {
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
-
-  // Save to localStorage when data changes
-  useEffect(() => {
-    if (chats.length > 0) {
-      localStorage.setItem("telegram-chats", JSON.stringify(chats))
-    }
-  }, [chats])
-
-  useEffect(() => {
-    if (Object.keys(messages).length > 0) {
-      localStorage.setItem("telegram-messages", JSON.stringify(messages))
-    }
-  }, [messages])
 
   const handleChatSelect = (chatId: string) => {
     setActiveChat(chatId)
@@ -94,101 +53,91 @@ export default function HomePage() {
       status: "sent",
     }
 
-    setMessages((prev) => ({
-      ...prev,
-      [activeChat]: [...(prev[activeChat] || []), newMessage],
-    }))
+    // Добавляем пользовательское сообщение
+    try {
+      await addMessageMutation.mutateAsync({
+        chatId: activeChat,
+        message: newMessage,
+      })
 
-    // Update last message in chat
-    setChats((prev) =>
-      prev.map((chat) =>
-        chat.id === activeChat ? { ...chat, lastMessage: content.trim(), lastMessageTime: new Date() } : chat,
-      ),
-    )
+      // Получаем текущий чат для проверки AI типа
+      const currentChat = chats.find((c) => c.id === activeChat)
+      
+      if (currentChat?.aiType) {
+        // Отправляем запрос к AI с небольшой задержкой
+        setTimeout(async () => {
+          try {
+            const response = await sendMessageMutation.mutateAsync({
+              message: content.trim(),
+              chatId: activeChat,
+              aiType: currentChat.aiType,
+            })
 
-    // Handle AI responses
-    const currentChat = chats.find((c) => c.id === activeChat)
-    if (currentChat?.aiType) {
-      setTimeout(
-        async () => {
-          let aiResponseContent: string
-          
-          if (currentChat.aiType === 'gemini') {
-            // Real Gemini AI response
-            try {
-              const response = await fetch('/api/gemini', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: content }),
-              })
-              
-              if (response.ok) {
-                const data = await response.json()
-                aiResponseContent = data.response
-              } else {
-                aiResponseContent = "Извините, произошла ошибка при обращении к Gemini AI. Попробуйте позже."
-              }
-            } catch (error) {
-              console.error('Error calling Gemini API:', error)
-              aiResponseContent = "Извините, произошла ошибка при обращении к Gemini AI. Попробуйте позже."
+            const aiResponse: Message = {
+              id: (Date.now() + 1).toString(),
+              content: response.response,
+              sender: "ai",
+              timestamp: new Date(),
+              status: "delivered",
             }
-          } else if (currentChat.aiType === 'fake') {
-            // Fake GPT responses
-            aiResponseContent = generateFakeAIResponse()
-          } else {
-            return // No AI response for regular chats
+
+            // Добавляем ответ AI
+            await addMessageMutation.mutateAsync({
+              chatId: activeChat,
+              message: aiResponse,
+            })
+          } catch (error) {
+            console.error('Error getting AI response:', error)
+            // Добавляем сообщение об ошибке
+            const errorMessage: Message = {
+              id: (Date.now() + 2).toString(),
+              content: "Извините, произошла ошибка при получении ответа. Попробуйте позже.",
+              sender: "ai",
+              timestamp: new Date(),
+              status: "delivered",
+            }
+
+            await addMessageMutation.mutateAsync({
+              chatId: activeChat,
+              message: errorMessage,
+            })
           }
-
-          const aiResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            content: aiResponseContent,
-            sender: "ai",
-            timestamp: new Date(),
-            status: "delivered",
-          }
-
-          setMessages((prev) => ({
-            ...prev,
-            [activeChat]: [...(prev[activeChat] || []), aiResponse],
-          }))
-
-          // Update chat with AI response
-          setChats((prev) =>
-            prev.map((chat) =>
-              chat.id === activeChat ? { ...chat, lastMessage: aiResponse.content, lastMessageTime: new Date() } : chat,
-            ),
-          )
-        },
-        1000 + Math.random() * 2000,
-      ) // Random delay 1-3 seconds
+        }, 1000 + Math.random() * 2000) // Случайная задержка 1-3 секунды
+      }
+    } catch (error) {
+      console.error('Error sending message:', error)
     }
   }
 
-  const generateFakeAIResponse = (): string => {
-    const responses = [
-      "Это интересный вопрос! Позвольте мне подумать над этим.",
-      "Я понимаю вашу точку зрения. Вот что я думаю по этому поводу...",
-      "Отличный вопрос! Основываясь на моих знаниях, могу сказать следующее:",
-      "Это довольно сложная тема. Давайте разберем ее по частям.",
-      "Спасибо за вопрос! Вот мой ответ:",
-      "Интересно, что вы об этом спрашиваете. Мое мнение таково:",
-      "Хм, это заставляет меня задуматься. Вот что я думаю:",
-      "Отличная тема для обсуждения! Мой взгляд на это следующий:",
-    ]
+  // Обработка состояний загрузки и ошибок
+  if (chatsLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-muted/30">
+        <div className="text-lg">Загрузка чатов...</div>
+      </div>
+    )
+  }
 
-    return responses[Math.floor(Math.random() * responses.length)]
+  if (chatsError) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-muted/30">
+        <div className="text-lg text-red-500">Ошибка загрузки чатов</div>
+      </div>
+    )
   }
 
   const currentChat = chats.find((c) => c.id === activeChat)
-  const currentMessages = activeChat ? messages[activeChat] || [] : []
+  const currentMessages = activeChat ? currentChat?.messages || [] : []
 
   return (
     <div className="flex h-screen bg-muted/30">
       {/* Sidebar */}
       <div className={`${isMobile ? (showSidebar ? "w-full" : "hidden") : "w-80"} transition-all duration-300`}>
-        <ChatSidebar chats={chats} activeChat={activeChat} onChatSelect={handleChatSelect} />
+        <ChatSidebar 
+          chats={chats} 
+          activeChat={activeChat} 
+          onChatSelect={handleChatSelect}
+        />
       </div>
 
       {/* Chat Area */}
@@ -199,6 +148,7 @@ export default function HomePage() {
           onSendMessage={handleSendMessage}
           onBackToSidebar={handleBackToSidebar}
           isMobile={isMobile}
+          isLoading={sendMessageMutation.isPending || addMessageMutation.isPending}
         />
       </div>
     </div>

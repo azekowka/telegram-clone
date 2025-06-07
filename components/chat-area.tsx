@@ -16,9 +16,10 @@ interface ChatAreaProps {
   onSendMessage: (content: string) => void
   onBackToSidebar: () => void
   isMobile: boolean
+  isLoading?: boolean
 }
 
-export function ChatArea({ chat, messages, onSendMessage, onBackToSidebar, isMobile }: ChatAreaProps) {
+export function ChatArea({ chat, messages, onSendMessage, onBackToSidebar, isMobile, isLoading = false }: ChatAreaProps) {
   const [messageInput, setMessageInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -150,14 +151,16 @@ export function ChatArea({ chat, messages, onSendMessage, onBackToSidebar, isMob
           />
         ))}
 
-        {isTyping && (
+        {(isTyping || isLoading) && (
           <div className="flex items-center gap-2 typing-indicator text-sm">
             <div className="flex space-x-1">
               <div className="w-2 h-2 typing-dot rounded-full animate-bounce"></div>
               <div className="w-2 h-2 typing-dot rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
               <div className="w-2 h-2 typing-dot rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
             </div>
-            <span>{chat.name} печатает...</span>
+            <span>
+              {isLoading ? "Отправка сообщения..." : `${chat.name} печатает...`}
+            </span>
           </div>
         )}
 
@@ -200,10 +203,14 @@ export function ChatArea({ chat, messages, onSendMessage, onBackToSidebar, isMob
 
           <Button
             onClick={handleSendMessage}
-            disabled={!messageInput.trim()}
+            disabled={!messageInput.trim() || isLoading}
             className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 mb-1"
           >
-            <Send className="w-5 h-5" />
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
           </Button>
         </div>
       </div>

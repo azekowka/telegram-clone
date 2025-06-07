@@ -43,6 +43,12 @@ export const mockChats: Chat[] = [
   },
 ]
 
+// Экспортируем chats с встроенными сообщениями для TanStack Query
+export const chats = mockChats.map(chat => ({
+  ...chat,
+  messages: mockMessages[chat.id] || []
+}))
+
 export const mockMessages: Record<string, Message[]> = {
   "1": [
     {

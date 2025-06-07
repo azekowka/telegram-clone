@@ -8,6 +8,7 @@ export interface Chat {
   lastMessage?: string
   lastMessageTime?: Date
   unreadCount: number
+  messages?: Message[]
 }
 
 export interface Message {
