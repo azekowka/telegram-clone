@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { ChatSidebar } from "@/components/chat-sidebar"
 import { ChatArea } from "@/components/chat-area"
-import type { Chat, Message } from "@/types/chat"
+import type { Message } from "@/types/chat"
 import { useChats, useSendMessage, useAddMessage } from "@/hooks/use-chat-queries"
 
 export default function HomePage() {

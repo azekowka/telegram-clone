@@ -21,7 +21,7 @@ export function validateAndFixChatsData(): Chat[] | null {
     const parsedChats = JSON.parse(storedChats)
     
     // Проверяем и исправляем структуру данных
-    const validatedChats = parsedChats.map((chat: any) => ({
+    const validatedChats = parsedChats.map((chat: Partial<Chat>) => ({
       ...chat,
       messages: Array.isArray(chat.messages) ? chat.messages : [],
       lastMessageTime: chat.lastMessageTime ? new Date(chat.lastMessageTime) : undefined,
