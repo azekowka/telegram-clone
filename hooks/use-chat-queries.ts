@@ -27,45 +27,72 @@ export function useChats() {
     queryKey: chatKeys.all,
     queryFn: async (): Promise<Chat[]> => {
       try {
-        // Если мы на сервере, возвращаем моковые данные
+        // Если мы на сервере, возвращаем пустой массив
         if (typeof window === 'undefined') {
-          const { chats } = await import('@/data/mock-data')
-          return chats.map((chat: Chat) => ({
-            ...chat,
-            messages: Array.isArray(chat.messages) ? chat.messages : []
-          }))
+          return []
         }
 
-        // На клиенте пытаемся мигрировать старые данные
+        // На клиенте пытаемся загрузить локальные данные
         const { migrateOldDataFormat, validateAndFixChatsData } = await import('@/lib/localStorage-utils')
         migrateOldDataFormat()
         
         // Проверяем и исправляем данные
         const validatedChats = validateAndFixChatsData()
-        if (validatedChats) {
+        if (validatedChats && validatedChats.length > 0) {
           return validatedChats
         }
         
-        // Возвращаем моковые данные, если нет сохраненных
+        // Если нет сохраненных данных, возвращаем моковые данные
         const { chats } = await import('@/data/mock-data')
+        
         // Убеждаемся, что каждый чат имеет массив сообщений
-        return chats.map((chat: Chat) => ({
+        const safeChats = chats.map((chat: Chat) => ({
           ...chat,
           messages: Array.isArray(chat.messages) ? chat.messages : []
         }))
+        
+        // Сохраняем моковые данные в localStorage для следующих загрузок
+        try {
+          localStorage.setItem('telegram-chats', JSON.stringify(safeChats))
+        } catch (storageError) {
+          console.warn('Could not save to localStorage:', storageError)
+        }
+        
+        return safeChats
+        
       } catch (error) {
         console.error('Error in useChats:', error)
-        // В случае любой ошибки возвращаем моковые данные
-        const { chats } = await import('@/data/mock-data')
-        return chats.map((chat: Chat) => ({
-          ...chat,
-          messages: Array.isArray(chat.messages) ? chat.messages : []
-        }))
+        
+        // Последняя попытка - возвращаем базовые моковые данные
+        return [
+          {
+            id: "1",
+            name: "Fake GPT",
+            isOnline: true,
+            isAI: true,
+            aiType: 'fake',
+            lastMessage: "Чем могу помочь?",
+            lastMessageTime: new Date(),
+            unreadCount: 0,
+            messages: []
+          },
+          {
+            id: "2", 
+            name: "Gemini AI",
+            isOnline: true,
+            isAI: true,
+            aiType: 'gemini',
+            lastMessage: "Готов к общению!",
+            lastMessageTime: new Date(),
+            unreadCount: 0,
+            messages: []
+          }
+        ]
       }
     },
     staleTime: 30 * 1000, // 30 секунд
-    retry: 3, // Больше попыток для Vercel
-    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retry: 2, // Меньше попыток чтобы быстрее переключиться на fallback
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000),
   })
 }
 
